@@ -17,26 +17,36 @@ namespace GithubDFSync
     public static class GitHubHook
     {
         [FunctionName("GitHubHook")]
-        public static IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req, ILogger log)
+        public static IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)]HttpRequest req,
+            ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             string requestBody = new StreamReader(req.Body).ReadToEnd();
-            var pushPayload = JsonConvert.DeserializeObject<PushPayload>(requestBody);
+            //var pushPayload = JsonConvert.DeserializeObject<PushPayload>(requestBody);
 
-            log.LogInformation($"Push message recieved: {pushPayload.after}");
+            //log.LogInformation($"Push message recieved: {pushPayload.after}");
+            //try
+            //{
+            //    GitHubUpdateInfo updateInfo = GitHubClient.GetGitHubUpdateInfo(pushPayload);
+
+            //    var dfChanges = new GithubToDFChangesConverter().ConvertChanges(updateInfo);
+            //    new DigitalFeedbackClient().ApplyChanges(dfChanges);
+            //}
+            //catch(Exception e)
+            //{
+            //    log.LogError(e, "unable to sync");
+            //}
+            //return new OkObjectResult($"OK");
             try
             {
-                GitHubUpdateInfo updateInfo = GitHubClient.GetGitHubUpdateInfo(pushPayload);
-
-                var dfChanges = new GithubToDFChangesConverter().ConvertChanges(updateInfo);
-                new DigitalFeedbackClient().ApplyChanges(dfChanges);
+                FSharpSync.Process(requestBody, log);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 log.LogError(e, "unable to sync");
             }
-            return new OkObjectResult($"OK");
+            return new OkObjectResult("OK");
         }
     }
     public class GithubToDFChangesConverter
